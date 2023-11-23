@@ -16,6 +16,20 @@ const signToken = function (id) {
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true,
+  };
+  if (process.env.NODE_ENV === 'production ') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+
+  // remove the password from the output
+  user.password = undefined;
+  user.passwordChangedAt = undefined;
+
   res.status(statusCode).json({
     status: 'success',
     token,
@@ -38,29 +52,70 @@ exports.signup = catchAsync(async (req, res, next) => {
   createSendToken(newUser, 201, res);
 });
 
+exports.isBlocked = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (user.blockDate !== undefined && user.blockDate.getTime() <= Date.now()) {
+    user.block = false;
+    user.wrongPassword = 0;
+    user.blockDate = undefined;
+    await user.save({ validateBeforeSave: false });
+  }
+
+  if (user.block) {
+    return next(
+      new AppError(
+        `You're blocked for ${parseInt(
+          (user.blockDate - Date.now()) / 60000,
+          10,
+        )} minutes`,
+        401,
+      ),
+    );
+  }
+  next();
+});
+
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   // check if user provided email and password
-  if (!email) {
-    return next(new AppError('please provide email', 400));
-  }
-  if (!password) {
-    return next(new AppError('please provide password', 400));
+  if (!email || !password) {
+    return next(new AppError('please provide email and password', 400));
   }
 
   //check if user existed in DB
-
   const user = await User.findOne({ email }).select('+password'); // + is to select a field that is not selected
   if (!user) {
-    return next(new AppError('wrong email', 401));
+    return next(new AppError('No user attached to this email', 401));
   }
 
   // Check if password is correct
   const correct = await user.correctPassword(password, user.password);
   if (!correct) {
+    // Block after 5 login times
+    if (user.wrongPassword >= 2) {
+      user.block = true;
+      user.blockDate = new Date(Date.now() + 60 * 60 * 1000);
+      await user.save({ validateBeforeSave: false });
+      return next(
+        new AppError(
+          `You're blocked for ${parseInt(
+            (user.blockDate - Date.now()) / 1000,
+            10,
+          )} minutes`,
+          401,
+        ),
+      );
+    }
+    user.wrongPassword += 1;
+    await user.save({ validateBeforeSave: false });
     return next(new AppError('incorrect password', 401));
   }
+
+  // Reset wrongPassword to zero
+  user.wrongPassword = 0;
+  await user.save({ validateBeforeSave: false });
 
   //send token
   createSendToken(user, 200, res);
