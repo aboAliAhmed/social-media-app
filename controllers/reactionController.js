@@ -161,8 +161,6 @@ exports.commentReaction = catchAsync(async (req, res, next) => {
 
   let post = await Post.findById(id);
 
-  // console.log(userId, req.params, id, commentId, react);
-  // console.log(post);
   const comment = post.comments.find(
     (el) => el._id.toString() === commentId.toString(),
   );
