@@ -10,6 +10,16 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
+// Sending the response to the server
+const sendResponse = (res, user, statusCode) => {
+  res.status(statusCode).json({
+    status: 'success',
+    data: {
+      user,
+    },
+  });
+};
+
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
 
@@ -40,38 +50,23 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user: updatedUser,
-    },
-  });
+  sendResponse(res, updatedUser, 200);
 });
 
 exports.createUser = catchAsync(async (req, res, next) => {
   const user = await User.create(req.body);
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      user,
-    },
-  });
+  sendResponse(res, user, 201);
 });
 
 exports.getUser = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    return next(new AppError('No user foud with this id'));
+    return next(new AppError('No user found with this id'));
   }
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user,
-    },
-  });
+  sendResponse(res, user, 200);
 });
 
 exports.updateUser = catchAsync(async (req, res, next) => {
@@ -81,12 +76,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
     return next(new AppError('No user foud with this id'));
   }
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user,
-    },
-  });
+  sendResponse(res, user, 200);
 });
 
 exports.deleteUser = catchAsync(async (req, res, next) => {

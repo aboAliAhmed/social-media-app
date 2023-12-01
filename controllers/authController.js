@@ -114,7 +114,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // Reset wrongPassword to zero
-  user.wrongPassword = 0;
+  user.wrongPassword = undefined;
   await user.save({ validateBeforeSave: false });
 
   //send token
@@ -137,8 +137,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verify the token
-  // compare the secret of the token with the stored secret
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET); // compare the secret of the token with the stored secret
 
   // 3) check if user still exists
   const existedUser = await User.findById(decoded.id);
@@ -153,8 +152,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  // Grant the user his data and Access to protected route
-  req.user = existedUser;
+  req.user = existedUser; // Grant the user his data and Access to protected route
 
   next();
 });

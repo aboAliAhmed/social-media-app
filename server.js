@@ -20,13 +20,10 @@ mongoose
   .connect(DB, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
   })
-  .then(() =>
-    console.log(
-      'DB connection is successful!',
-      (Date.now() + 60 * 60 * 1000 - Date.now()) / 60000,
-    ),
-  );
+  .then(() => console.log('DB connection is successful!'));
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {

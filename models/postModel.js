@@ -7,18 +7,61 @@ const postSchema = new mongoose.Schema({
     minlength: [1, 'maybe you forget to write'],
     maxlength: [500, 'the post should not be more than 500 letters'],
   },
-  owner: {
+  publisher: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
-  WritenAt: {
+  publishedAt: {
     type: Date,
     default: Date.now(),
   },
-  Comments: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'comment',
-  },
+  reacts: [
+    {
+      react: {
+        type: String,
+        enum: ['like', 'love', 'support', 'sad', 'angry'],
+        required: true,
+      },
+      user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+    },
+  ],
+  comments: [
+    {
+      content: {
+        type: String,
+        maxlength: [150, 'The maximum length is 150 characters'],
+        required: [true, 'A comment must have at least 1 character'],
+      },
+      commenter: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      issuedAt: {
+        type: Date,
+        default: Date.now(),
+        required: true,
+      },
+      reacts: [
+        {
+          react: {
+            type: String,
+            enum: ['like', 'love', 'support', 'sad', 'angry'],
+            required: true,
+          },
+          user: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'User',
+            required: true,
+          },
+        },
+      ],
+    },
+  ],
 });
 
 const Post = mongoose.model('Post', postSchema);
