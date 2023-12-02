@@ -56,18 +56,26 @@ This is the backend API for a Social Media Platform, built using Node.js, Expres
 
 - **POST /register:** Register a new user.
 - **POST /login:** User authentication.
+- **POST /forgetPassword:** User forgot his password and reset it.
+- **PATCH /updatePassword:** User update his password.
+- **PATCH /updateMe:** User update his data.
+- **PATCH /deleteMe:** User delete his profile.
 - **GET /users/:id:** Get user profile information.
+- **PATCH /users/:id:** Admin edit profile to make it modrator or a regular user.
+- **delete /users/:id:** Admin delete profile.
 
 ### Posts
 
+- **POST /posts:** Get all posts.
 - **POST /posts:** Create a new post.
 - **GET /posts/:id:** Get a specific post.
-- **POST /posts/:id/like:** Like a post.
-- **POST /posts/:id/comments:** Comment on a post.
-
-### Reactions
-
-- **POST /posts/:id/react:** React to a post.
+- **PSTCH /posts/:id:** Edit a post.
+- **DELETE /posts/:id:** Delete a post.
+- **POST /posts/:id/react:** React to a post, change your reaction or remove it.
+- **POST /posts/:id/comment:** Comment on a post.
+- **PATCH /posts/:id/comment/:commentId:** User edit his comment.
+- **PATCH /posts/:id/comment/:commentId:** User delete his comment
+- **POST /posts/:id/comment/:commentId/react:** React to a comment, change your reaction or remove it.
 
 ## usage
 
